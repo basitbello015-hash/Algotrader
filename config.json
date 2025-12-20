@@ -1,0 +1,22 @@
+{
+  "exchange": "bybit",
+  "strategy": "high-probability",
+  "timeframe": "5",
+  "stopLoss": 1.0,
+  "takeProfit": 2.5,
+  "maxHold": 5400,
+  "rsiPeriod": 14,
+  "rsiOversold": 35,
+  "tradeAllocation": 100,
+  "minTradeAmount": 5.0,
+  "maxTradesPerDay": 10,
+  "scanInterval": 60,
+  "useMarketOrder": true,
+  "testOnTestnet": false,
+  "dryRun": true,
+  
+  "ai_provider": "groq",
+  "groq_model": "llama3-70b-8192",
+  "ai_update_hour": 0,
+  "ai_coins": ["ADAUSDT", "DOGEUSDT", "TRXUSDT", "VETUSDT", "ALGOUSDT", "XLMUSDT", "ONEUSDT", "ANKRUSDT", "COTIUSDT", "SHIBUSDT"]
+}
