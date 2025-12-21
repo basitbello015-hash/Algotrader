@@ -3,7 +3,7 @@ Global application state with logging
 """
 import logging
 from bot_controller import bc
-
+from datetime import datetime 
 logger = logging.getLogger("AppState")
 
 # Bot controller instance
