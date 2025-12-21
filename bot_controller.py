@@ -80,11 +80,10 @@ class GroqAIClient:
         
         # Available Groq models
         self.models = [
-            "llama3-70b-8192",      # Most capable
             "llama3-8b-8192",       # Fast and efficient
             "mixtral-8x7b-32768",   # Good balance
-            "gemma-7b-it"           # Fastest
-        ]
+                    
+       ]
         
         self.current_model = self.models[0]
         
