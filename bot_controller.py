@@ -80,8 +80,8 @@ class GroqAIClient:
         
         # Available Groq models
         self.models = [
-            "llama3-8b-8192",       # Fast and efficient
-            "mixtral-8x7b-32768",   # Good balance
+            "llama-3.1-8b-instant",
+            "llama-3.1-70b-versatile"
                     
        ]
         
