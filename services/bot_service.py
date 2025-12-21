@@ -4,10 +4,10 @@ Bot service with comprehensive logging
 import logging
 from datetime import datetime
 from bot_controller import bc
-
+from typing import Dict,any
 logger = logging.getLogger("BotService")
 
-def get_bot_status() -> dict:
+def get_bot_status() -> Dict:
     """Get bot status with detailed logging"""
     logger.debug("📊 Getting bot status")
     
@@ -58,7 +58,7 @@ def get_bot_status() -> dict:
             "last_update": datetime.now().isoformat()
         }
 
-def start_bot() -> dict:
+def start_bot() -> Dict:
     """Start bot with logging"""
     logger.info("🚀 Starting bot...")
     
@@ -90,7 +90,7 @@ def start_bot() -> dict:
             "running": False
         }
 
-def stop_bot() -> dict:
+def stop_bot() -> Dict:
     """Stop bot with logging"""
     logger.info("🛑 Stopping bot...")
     
@@ -122,7 +122,7 @@ def stop_bot() -> dict:
             "running": True  # Assume still running if stop failed
         }
 
-def restart_bot() -> dict:
+def restart_bot() -> Dict:
     """Restart bot with logging"""
     logger.info("🔄 Restarting bot...")
     
@@ -165,7 +165,7 @@ def restart_bot() -> dict:
             "error": str(e)
         }
 
-def get_bot_performance(days: int = 7) -> dict:
+def get_bot_performance(days: int = 7) -> Dict:
     """Get bot performance metrics"""
     logger.info(f"📈 Getting bot performance for last {days} days")
     
