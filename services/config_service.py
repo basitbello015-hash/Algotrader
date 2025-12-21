@@ -16,9 +16,9 @@ DEFAULT_CONFIG = {
     "minTradeAmount": 5.0,
     "maxTradesPerDay": 10,
     "scanInterval": 60,
-    "useMarketOrder": true,
-    "testOnTestnet": false,
-    "dryRun": true,
+    "useMarketOrder": True,
+    "testOnTestnet": False,
+    "dryRun": True,
     "ai_coins": ["ADAUSDT", "DOGEUSDT", "TRXUSDT", "VETUSDT", "ALGOUSDT", "XLMUSDT", "ONEUSDT", "ANKRUSDT", "COTIUSDT", "SHIBUSDT"]
 }
 
