@@ -4,7 +4,7 @@ Bot service with comprehensive logging
 import logging
 from datetime import datetime
 from bot_controller import bc
-from typing import Dict,List
+from typing import Dict,List,Any
 logger = logging.getLogger("BotService")
 
 def get_bot_status() -> Dict:
