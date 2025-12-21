@@ -7,7 +7,7 @@ from bot_controller import bc
 
 logger = logging.getLogger("BotService")
 
-def get_bot_status() -> Dict:
+def get_bot_status() -> dict:
     """Get bot status with detailed logging"""
     logger.debug("📊 Getting bot status")
     
