@@ -58,7 +58,7 @@ def get_bot_status() -> dict:
             "last_update": datetime.now().isoformat()
         }
 
-def start_bot() -> Dict:
+def start_bot() -> dict:
     """Start bot with logging"""
     logger.info("🚀 Starting bot...")
     
@@ -90,7 +90,7 @@ def start_bot() -> Dict:
             "running": False
         }
 
-def stop_bot() -> Dict:
+def stop_bot() -> dict:
     """Stop bot with logging"""
     logger.info("🛑 Stopping bot...")
     
@@ -122,7 +122,7 @@ def stop_bot() -> Dict:
             "running": True  # Assume still running if stop failed
         }
 
-def restart_bot() -> Dict:
+def restart_bot() -> dict:
     """Restart bot with logging"""
     logger.info("🔄 Restarting bot...")
     
@@ -165,7 +165,7 @@ def restart_bot() -> Dict:
             "error": str(e)
         }
 
-def get_bot_performance(days: int = 7) -> Dict:
+def get_bot_performance(days: int = 7) -> dict:
     """Get bot performance metrics"""
     logger.info(f"📈 Getting bot performance for last {days} days")
     
