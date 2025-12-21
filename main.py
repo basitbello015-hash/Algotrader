@@ -200,6 +200,70 @@ async def status():
     
     logger.info(f"📊 Status: Bot running={bc.is_running()}, Trades today={bc.trades_today}")
     return response
+# Add these routes to your main.py:
+
+@app.get("/api/groq/status")
+async def groq_status():
+    """Get Groq API status and usage"""
+    try:
+        insights = bc.get_market_insights()
+        groq_stats = insights.get("groq_stats", {})
+        
+        return {
+            "groq_configured": groq_stats.get("api_key_configured", False),
+            "total_requests": groq_stats.get("total_requests", 0),
+            "success_rate": groq_stats.get("success_rate", 0),
+            "total_tokens": groq_stats.get("total_tokens", 0),
+            "current_model": groq_stats.get("current_model", "unknown"),
+            "market_sentiment": insights.get("market_analysis", {}).get("market_sentiment", "unknown"),
+            "coin_count": len(bc.get_coins()),
+            "last_update": bc.ai_selector.last_update
+        }
+    except Exception as e:
+        logger.error(f"❌ Groq status error: {e}")
+        return {"error": str(e)}
+
+@app.post("/api/groq/update")
+async def update_groq_coins():
+    """Force update Groq coin selection"""
+    logger.info("🔄 Manual Groq update requested via API")
+    
+    try:
+        result = bc.force_ai_update()
+        
+        if result["success"]:
+            logger.info(f"✅ Manual Groq update successful: {result['message']}")
+            return {
+                "success": True,
+                "message": result["message"],
+                "coins": result["coins"],
+                "market_insights": result.get("market_insights", {}),
+                "update_time": result.get("update_time", 0)
+            }
+        else:
+            logger.error(f"❌ Manual Groq update failed: {result.get('error')}")
+            raise HTTPException(500, result.get("message", "Groq update failed"))
+            
+    except Exception as e:
+        logger.error(f"❌ Groq update API error: {e}", exc_info=True)
+        raise HTTPException(500, f"Groq update failed: {str(e)}")
+
+@app.get("/api/groq/insights")
+async def get_groq_insights():
+    """Get current market insights from Groq"""
+    try:
+        insights = bc.get_market_insights()
+        
+        return {
+            "market_analysis": insights.get("market_analysis", {}),
+            "groq_stats": insights.get("groq_stats", {}),
+            "current_coins": bc.get_coins(),
+            "last_update": bc.ai_selector.last_update,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"❌ Groq insights error: {e}")
+        return {"error": str(e)}
 
 @app.get("/api/ai/coins")
 async def get_ai_coins():
