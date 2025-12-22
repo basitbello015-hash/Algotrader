@@ -1,0 +1,471 @@
+{% extends "base.html" %}
+{% block content %}
+{% set active = "accounts" %}
+{% set title = "Accounts" %}
+
+<div class="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Trading Accounts</h1>
+    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <button onclick="validateAllAccounts()" class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Validate All
+        </button>
+        <button onclick="showEnvironmentStatus()" class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+            Env Status
+        </button>
+        <button onclick="syncWithBot()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Sync Bot
+        </button>
+    </div>
+</div>
+
+<!-- Environment Variables Info Card -->
+<div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+    <div class="flex items-start">
+        <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div>
+            <h3 class="font-semibold text-blue-800 text-sm sm:text-base">Accounts Managed via Environment Variables</h3>
+            <p class="text-blue-700 text-xs sm:text-sm mt-1">
+                Accounts are loaded from server environment variables. To add or remove accounts, update your environment variables:
+            </p>
+            <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div class="bg-blue-100 p-2 rounded">
+                    <code class="text-blue-800">BYBIT_API_KEY=your_key</code><br>
+                    <code class="text-blue-800">BYBIT_API_SECRET=your_secret</code>
+                </div>
+                <div class="bg-blue-100 p-2 rounded">
+                    <code class="text-blue-800">BYBIT_API_KEY_1=key1</code><br>
+                    <code class="text-blue-800">BYBIT_API_SECRET_1=secret1</code>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accounts Statistics -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div class="flex items-center">
+            <div class="p-2 bg-blue-100 rounded-lg">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-gray-500">Total Accounts</p>
+                <p class="text-lg font-semibold text-gray-800">{{ account_stats.total_accounts }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div class="flex items-center">
+            <div class="p-2 bg-green-100 rounded-lg">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-gray-500">Validated</p>
+                <p class="text-lg font-semibold text-gray-800">{{ account_stats.validated_accounts }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div class="flex items-center">
+            <div class="p-2 bg-yellow-100 rounded-lg">
+                <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.998-.833-2.732 0L4.342 16.5c-.77.833.192 2.5 1.732 2.5z"></path></svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-gray-500">Invalid</p>
+                <p class="text-lg font-semibold text-gray-800">{{ account_stats.invalid_accounts }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div class="flex items-center">
+            <div class="p-2 bg-purple-100 rounded-lg">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-gray-500">Total Balance</p>
+                <p class="text-lg font-semibold text-gray-800">${{ "%.2f"|format(account_stats.total_balance|float) }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Accounts List -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+    <div class="px-4 py-3 sm:px-6 bg-gray-50 border-b border-gray-200">
+        <h3 class="text-base sm:text-lg font-semibold text-gray-800">Environment Variable Accounts</h3>
+        <p class="text-xs sm:text-sm text-gray-600 mt-1">
+            Showing {{ accounts|length }} account{% if accounts|length != 1 %}s{% endif %} loaded from environment variables
+        </p>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name & Source</th>
+                    <th class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Balance</th>
+                    <th class="px-3 sm:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">Last Check</th>
+                    <th class="px-3 sm:px-6 py-2 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for account in accounts %}
+                <tr>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4">
+                        <div class="flex flex-col">
+                            <div class="text-xs sm:text-sm font-medium text-gray-900">{{ account.name }}</div>
+                            <div class="flex items-center mt-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                    {% if account.source == "demo" %}
+                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg>
+                                    Demo
+                                    {% else %}
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                                    ENV
+                                    {% endif %}
+                                </span>
+                                <span class="text-xs text-gray-500 ml-2 truncate max-w-[120px] sm:max-w-[200px]">{{ account.id }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4">
+                        {% if account.validated %}
+                        <div class="flex flex-col">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 w-fit">
+                                Connected
+                            </span>
+                            {% if account.validation_error %}
+                            <span class="text-xs text-red-600 mt-1 truncate">{{ account.validation_error[:30] }}...</span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="flex flex-col">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800 w-fit">
+                                Error
+                            </span>
+                            {% if account.validation_error %}
+                            <span class="text-xs text-red-600 mt-1 truncate">{{ account.validation_error[:30] }}...</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        <div class="text-xs text-gray-500 md:hidden mt-1">
+                            {% if account.balance %}
+                            ${{ "%.2f"|format(account.balance|float) }}
+                            {% else %}
+                            --
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 font-medium hidden md:table-cell">
+                        {% if account.balance %}
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-green-500 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            ${{ "%.2f"|format(account.balance|float) }}
+                        </div>
+                        {% else %}
+                        <span class="text-gray-400">--</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs text-gray-500 hidden lg:table-cell">
+                        {% if account.last_validation %}
+                        {{ account.last_validation[:16] }}
+                        {% else %}
+                        Never
+                        {% endif %}
+                    </td>
+                    <td class="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-right text-xs sm:text-sm font-medium">
+                        {% if account.source == "demo" %}
+                        <button onclick="testAccount('{{ account.id }}')" class="text-blue-600 hover:text-blue-900 mr-3">Test</button>
+                        <button onclick="removeDemoAccount('{{ account.id }}')" class="text-red-600 hover:text-red-900">Remove</button>
+                        {% else %}
+                        <button onclick="testAccount('{{ account.id }}')" class="text-blue-600 hover:text-blue-900 mr-3">Test</button>
+                        <button onclick="showEnvInstructions('{{ account.name }}')" class="text-gray-600 hover:text-gray-900" title="Manage via Environment">
+                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-3 sm:px-6 py-8 sm:py-12 text-center">
+                        <div class="flex flex-col items-center justify-center">
+                            <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                            <h4 class="text-sm sm:text-base font-medium text-gray-700 mb-2">No Environment Accounts Found</h4>
+                            <p class="text-xs sm:text-sm text-gray-500 mb-4 max-w-md">
+                                No BYBIT_API_KEY environment variables found. Add environment variables to your server to configure accounts.
+                            </p>
+                            <button onclick="addDemoAccount()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-sm flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Add Demo Account
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Environment Status Modal -->
+<div id="envStatusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 px-4">
+    <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base sm:text-lg leading-6 font-medium text-gray-900">Environment Variables Status</h3>
+            <button onclick="document.getElementById('envStatusModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div id="envStatusContent" class="space-y-4 max-h-[60vh] overflow-y-auto">
+            <!-- Content loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- Environment Instructions Modal -->
+<div id="envInstructionsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 px-4">
+    <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base sm:text-lg leading-6 font-medium text-gray-900">Manage Account via Environment</h3>
+            <button onclick="document.getElementById('envInstructionsModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div id="envInstructionsContent" class="space-y-4">
+            <!-- Content loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<script>
+    async function validateAllAccounts() {
+        try {
+            const res = await fetch('/api/accounts/validate-all', { method: 'POST' });
+            const result = await res.json();
+            
+            if (result.success) {
+                let message = `Validated ${result.summary.total_accounts} accounts:\n\n`;
+                message += `✅ ${result.summary.successful_validations} successful\n`;
+                message += `❌ ${result.summary.failed_validations} failed\n`;
+                message += `💰 Total balance: $${result.summary.total_balance.toFixed(2)}\n\n`;
+                
+                // Add individual results
+                result.results.forEach(acc => {
+                    message += `${acc.validated ? '✅' : '❌'} ${acc.name}: $${acc.balance?.toFixed(2) || '0.00'} ${acc.error ? `(${acc.error})` : ''}\n`;
+                });
+                
+                alert(message);
+                window.location.reload();
+            } else {
+                alert('Validation failed: ' + (result.message || 'Unknown error'));
+            }
+        } catch (err) {
+            alert('Failed to validate accounts');
+        }
+    }
+
+    async function showEnvironmentStatus() {
+        try {
+            const res = await fetch('/api/accounts/env-status');
+            const data = await res.json();
+            
+            let html = `
+                <div class="space-y-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h4 class="font-semibold text-blue-800 mb-2">Summary</h4>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="text-sm">Total Accounts: <span class="font-semibold">${data.summary.total_accounts_found}</span></div>
+                            <div class="text-sm">Groq API: <span class="font-semibold ${data.groq.has_key ? 'text-green-600' : 'text-red-600'}">${data.groq.has_key ? 'Configured' : 'Missing'}</span></div>
+                        </div>
+                    </div>
+            `;
+            
+            // Single account
+            if (data.single_account.BYBIT_API_KEY || data.single_account.BYBIT_API_SECRET) {
+                html += `
+                    <div class="border rounded-lg p-4 ${data.single_account.complete ? 'border-green-200 bg-green-50' : 'border-yellow-200 bg-yellow-50'}">
+                        <h4 class="font-semibold mb-2">Single Account (BYBIT_API_KEY, BYBIT_API_SECRET)</h4>
+                        <div class="space-y-1">
+                            <div class="flex justify-between text-sm">
+                                <span>BYBIT_API_KEY:</span>
+                                <span class="${data.single_account.BYBIT_API_KEY.includes('✅') ? 'text-green-600' : 'text-red-600'} font-medium">${data.single_account.BYBIT_API_KEY}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span>BYBIT_API_SECRET:</span>
+                                <span class="${data.single_account.BYBIT_API_SECRET.includes('✅') ? 'text-green-600' : 'text-red-600'} font-medium">${data.single_account.BYBIT_API_SECRET}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Multiple accounts
+            if (data.multiple_accounts.length > 0) {
+                html += `
+                    <div class="border rounded-lg p-4 border-blue-200 bg-blue-50">
+                        <h4 class="font-semibold mb-2">Multiple Accounts</h4>
+                        <div class="space-y-3">
+                `;
+                
+                data.multiple_accounts.forEach(acc => {
+                    html += `
+                        <div class="${acc.complete ? 'border-green-200 bg-green-50 p-3 rounded' : 'border-yellow-200 bg-yellow-50 p-3 rounded'}">
+                            <h5 class="font-medium text-sm mb-1">Account ${acc.account_number}</h5>
+                            <div class="space-y-1 text-xs">
+                                <div class="flex justify-between">
+                                    <span>BYBIT_API_KEY_${acc.account_number}:</span>
+                                    <span class="${acc.BYBIT_API_KEY.includes('✅') ? 'text-green-600' : 'text-red-600'} font-medium">${acc.BYBIT_API_KEY}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>BYBIT_API_SECRET_${acc.account_number}:</span>
+                                    <span class="${acc.BYBIT_API_SECRET.includes('✅') ? 'text-green-600' : 'text-red-600'} font-medium">${acc.BYBIT_API_SECRET}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div></div>`;
+            }
+            
+            // Groq API
+            html += `
+                <div class="border rounded-lg p-4 ${data.groq.has_key ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'}">
+                    <h4 class="font-semibold mb-2">Groq AI Configuration</h4>
+                    <div class="flex justify-between text-sm">
+                        <span>GROQ_API_KEY:</span>
+                        <span class="${data.groq.has_key ? 'text-green-600' : 'text-red-600'} font-medium">${data.groq.GROQ_API_KEY}</span>
+                    </div>
+                </div>
+            `;
+            
+            html += `</div>`;
+            
+            document.getElementById('envStatusContent').innerHTML = html;
+            document.getElementById('envStatusModal').classList.remove('hidden');
+        } catch (err) {
+            alert('Failed to get environment status');
+        }
+    }
+
+    async function syncWithBot() {
+        try {
+            const res = await fetch('/api/accounts/sync-bot', { method: 'POST' });
+            const result = await res.json();
+            
+            if (result.success) {
+                let message = `✅ Synced ${result.accounts_count} accounts with bot controller\n\n`;
+                message += `🤖 Bot Status: ${result.bot_status.running ? 'Running' : 'Stopped'}\n`;
+                message += `🎯 AI Coins: ${result.bot_status.ai_coins_count}\n\n`;
+                
+                alert(message);
+            } else {
+                alert('Sync failed: ' + (result.message || 'Unknown error'));
+            }
+        } catch (err) {
+            alert('Failed to sync with bot');
+        }
+    }
+
+    async function testAccount(id) {
+        try {
+            const res = await fetch(`/api/accounts/${id}/test`, { method: 'POST' });
+            const result = await res.json();
+            
+            if (result.success) {
+                let message = `✅ Connection successful!\n\n`;
+                message += `💰 Balance: $${result.balance.toFixed(2)}\n`;
+                if (result.balance_change !== undefined) {
+                    message += `📈 Change: ${result.balance_change >= 0 ? '+' : ''}$${result.balance_change.toFixed(2)}\n`;
+                }
+                message += `⏱️ Time: ${result.validation_time.toFixed(2)}s\n`;
+                
+                alert(message);
+                window.location.reload();
+            } else {
+                alert(`❌ Connection failed: ${result.message}`);
+            }
+        } catch (err) {
+            alert('Failed to test account connection');
+        }
+    }
+
+    async function addDemoAccount() {
+        if (!confirm('Add a demo account for testing? This only works in DRY RUN mode.')) return;
+        
+        try {
+            const res = await fetch('/api/accounts/demo', { method: 'POST' });
+            const result = await res.json();
+            
+            if (result.success) {
+                alert(`✅ Demo account added: ${result.account.name}\n💰 Balance: $${result.balance.toFixed(2)}`);
+                window.location.reload();
+            } else {
+                alert('Failed to add demo account: ' + result.message);
+            }
+        } catch (err) {
+            alert('Failed to add demo account');
+        }
+    }
+
+    async function removeDemoAccount(id) {
+        if (!confirm('Remove demo account? This will not affect environment variables.')) return;
+        
+        try {
+            // We'll just reload the page since demo accounts are temporary
+            window.location.reload();
+        } catch (err) {
+            alert('Failed to remove demo account');
+        }
+    }
+
+    function showEnvInstructions(accountName) {
+        const instructions = `
+            <div class="space-y-4">
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-blue-800 mb-2">Managing Account: ${accountName}</h4>
+                    <p class="text-sm text-blue-700 mb-3">
+                        This account is managed via environment variables. To modify or remove it:
+                    </p>
+                    <div class="space-y-3">
+                        <div>
+                            <h5 class="font-medium text-sm text-gray-700 mb-1">To Update:</h5>
+                            <p class="text-xs text-gray-600">Edit the environment variables on your server and restart the application.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-sm text-gray-700 mb-1">To Remove:</h5>
+                            <p class="text-xs text-gray-600">Delete the corresponding environment variables from your server.</p>
+                        </div>
+                        <div>
+                            <h5 class="font-medium text-sm text-gray-700 mb-1">Example Variables:</h5>
+                            <div class="bg-gray-100 p-2 rounded text-xs font-mono">
+                                BYBIT_API_KEY=your_api_key_here<br>
+                                BYBIT_API_SECRET=your_api_secret_here<br>
+                                BYBIT_ACCOUNT_NAME=${accountName}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-500">
+                    <p>💡 <strong>Tip:</strong> On Render, you can update environment variables in the Dashboard under Environment section.</p>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('envInstructionsContent').innerHTML = instructions;
+        document.getElementById('envInstructionsModal').classList.remove('hidden');
+    }
+
+    // Auto-refresh page every 60 seconds to show updated balances
+    setTimeout(() => {
+        window.location.reload();
+    }, 60000);
+</script>
+{% endblock %}
