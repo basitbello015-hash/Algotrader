@@ -1,0 +1,685 @@
+{% extends "base.html" %}
+{% block content %}
+{% set active = "dashboard" %}
+{% set title = "Dashboard" %}
+
+<div class="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <h1 class="text-xl sm:text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+    <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <button onclick="refreshDashboard()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Refresh
+        </button>
+        <button onclick="updateGroqCoins()" class="w-full sm:w-auto px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            Update AI
+        </button>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="mb-6">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div>
+                <div class="flex items-center mb-1">
+                    <div class="p-2 bg-blue-100 text-blue-600 rounded-lg mr-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Total Balance</p>
+                        <p class="text-lg font-bold text-gray-800" id="totalBalance">--</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div class="flex items-center mb-1">
+                    <div class="p-2 bg-green-100 text-green-600 rounded-lg mr-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Total Profit</p>
+                        <p class="text-lg font-bold text-gray-800" id="totalProfit">--</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div class="flex items-center mb-1">
+                    <div class="p-2 bg-orange-100 text-orange-600 rounded-lg mr-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Trades Today</p>
+                        <p class="text-lg font-bold text-gray-800" id="tradesToday">--/--</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div class="flex items-center mb-1">
+                    <div class="p-2 bg-red-100 text-red-600 rounded-lg mr-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Accounts</p>
+                        <p class="text-lg font-bold text-gray-800" id="activeAccounts">--/--</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <!-- Left Column -->
+    <div class="space-y-6">
+        <!-- Bot Status -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Bot Status</h3>
+                <span id="botStatusBadge" class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Loading...</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <p class="text-xs text-gray-500">AI Coins</p>
+                    <p class="text-lg font-bold text-gray-800" id="aiCoinsCount">--</p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <p class="text-xs text-gray-500">Qualification Rate</p>
+                    <p class="text-lg font-bold text-gray-800" id="qualificationRate">--%</p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <p class="text-xs text-gray-500">Win Rate</p>
+                    <p class="text-lg font-bold text-gray-800" id="winRate">--%</p>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-lg">
+                    <p class="text-xs text-gray-500">Uptime</p>
+                    <p class="text-lg font-bold text-gray-800" id="uptime">--</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Trades -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Recent Trades</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Entry</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Profit</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="recentTradesTable">
+                        <tr>
+                            <td colspan="4" class="px-3 py-4 text-center text-gray-500 text-sm">Loading trades...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="space-y-6">
+        <!-- Groq AI Insights -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Groq AI Insights</h3>
+                <div class="flex items-center space-x-2">
+                    <span id="sentimentBadge" class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Loading...</span>
+                    <span id="probabilityBadge" class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">0%</span>
+                </div>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">Market Analysis:</p>
+                    <p class="text-sm font-medium text-gray-800" id="marketAnalysis">Loading Groq insights...</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 mb-1">AI Selected Coins:</p>
+                    <div class="flex flex-wrap gap-1" id="aiCoinsList">
+                        <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">Loading...</span>
+                    </div>
+                </div>
+                <div class="pt-2 border-t border-gray-100">
+                    <p class="text-xs text-gray-500">Last update: <span id="lastGroqUpdate">--</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Performance -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Daily Performance</h3>
+                <button onclick="showPerformanceChart()" class="text-xs text-blue-600 hover:text-blue-800">View Chart</button>
+            </div>
+            <div class="space-y-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="p-2 bg-gray-50 rounded">
+                        <p class="text-xs text-gray-500">Today's Trades</p>
+                        <p class="text-lg font-bold text-gray-800" id="todayTradesCount">--</p>
+                    </div>
+                    <div class="p-2 bg-gray-50 rounded">
+                        <p class="text-xs text-gray-500">Today's Profit</p>
+                        <p class="text-lg font-bold text-gray-800" id="todayProfit">--</p>
+                    </div>
+                </div>
+                <div class="pt-2">
+                    <p class="text-xs text-gray-500 mb-1">Weekly Win Rate</p>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="winRateBar" class="bg-green-600 h-2 rounded-full" style="width: 0%"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1 text-right" id="weeklyWinRate">--%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Market Prices -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-800">Live Prices (AI Coins)</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Symbol</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase hidden sm:table-cell">Change</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="marketPricesTable">
+                        <tr>
+                            <td colspan="3" class="px-3 py-4 text-center text-gray-500 text-sm">Connecting to market...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Analytics Modal -->
+<div id="analyticsModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 px-4">
+    <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-6 border w-full max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-900">Advanced Analytics</h3>
+            <button onclick="closeAnalyticsModal()" class="text-gray-400 hover:text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div id="analyticsContent" class="space-y-6 max-h-[70vh] overflow-y-auto">
+            <!-- Content loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- Performance Chart Modal -->
+<div id="chartModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50 px-4">
+    <div class="relative top-10 sm:top-20 mx-auto p-4 sm:p-6 border w-full max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg sm:text-xl font-semibold text-gray-900">Performance Chart</h3>
+            <button onclick="closeChartModal()" class="text-gray-400 hover:text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div id="chartContent" class="space-y-6">
+            <!-- Chart loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<script>
+    // WebSocket for live prices
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/prices`);
+    
+    let marketPrices = {};
+    let aiCoins = [];
+
+    ws.onmessage = function(event) {
+        const data = JSON.parse(event.data);
+        if (data.type === 'prices') {
+            marketPrices = data.prices;
+            aiCoins = data.ai_coins || [];
+            updateMarketPrices();
+        }
+    };
+
+    ws.onerror = function(error) {
+        console.error('WebSocket error:', error);
+    };
+
+    // Dashboard Functions
+    async function fetchDashboardData() {
+        try {
+            // Fetch quick stats
+            const [statsRes, tradesRes, insightsRes, botStatusRes] = await Promise.all([
+                fetch('/api/dashboard/quick-stats'),
+                fetch('/api/dashboard/recent-trades?limit=5'),
+                fetch('/api/groq/insights'),
+                fetch('/api/dashboard/bot-status')
+            ]);
+
+            const stats = await statsRes.json();
+            const trades = await tradesRes.json();
+            const insights = await insightsRes.json();
+            const botStatus = await botStatusRes.json();
+
+            if (stats.success) {
+                updateQuickStats(stats);
+            }
+
+            if (trades.success) {
+                updateRecentTrades(trades.trades);
+            }
+
+            if (insights.market_analysis) {
+                updateGroqInsights(insights);
+            }
+
+            if (botStatus.success) {
+                updateBotStatus(botStatus);
+            }
+
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error);
+        }
+    }
+
+    async function fetchPerformanceData() {
+        try {
+            const response = await fetch('/api/dashboard/performance');
+            const data = await response.json();
+            
+            if (data.success) {
+                updatePerformanceData(data.metrics);
+            }
+        } catch (error) {
+            console.error('Error fetching performance data:', error);
+        }
+    }
+
+    function updateQuickStats(data) {
+        const quickStats = data.quick_stats;
+        const performance = data.performance;
+        const accounts = data.accounts;
+
+        // Update stats
+        document.getElementById('totalBalance').textContent = `$${quickStats.total_balance.toFixed(2)}`;
+        document.getElementById('totalProfit').textContent = `$${quickStats.total_profit.toFixed(2)}`;
+        document.getElementById('tradesToday').textContent = `${quickStats.trades_today}/${quickStats.daily_limit}`;
+        document.getElementById('activeAccounts').textContent = `${accounts.validated}/${accounts.total}`;
+        
+        // Update bot status badge
+        const badge = document.getElementById('botStatusBadge');
+        if (quickStats.bot_status === 'running') {
+            badge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800';
+            badge.textContent = 'Running';
+        } else {
+            badge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800';
+            badge.textContent = 'Stopped';
+        }
+
+        // Update other stats
+        document.getElementById('aiCoinsCount').textContent = quickStats.ai_coins_count || 0;
+        document.getElementById('qualificationRate').textContent = `${quickStats.qualification_rate.toFixed(1)}%`;
+        document.getElementById('winRate').textContent = `${quickStats.win_rate.toFixed(1)}%`;
+        
+        // Today's data
+        document.getElementById('todayTradesCount').textContent = quickStats.trades_today;
+        document.getElementById('todayProfit').textContent = `$${quickStats.total_profit.toFixed(2)}`;
+    }
+
+    function updateRecentTrades(trades) {
+        const table = document.getElementById('recentTradesTable');
+        
+        if (trades.length === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="4" class="px-3 py-4 text-center text-gray-500 text-sm">No recent trades</td>
+                </tr>
+            `;
+            return;
+        }
+
+        table.innerHTML = trades.map(trade => `
+            <tr>
+                <td class="px-3 py-2 text-sm font-medium text-gray-900">${trade.symbol}</td>
+                <td class="px-3 py-2 text-sm text-gray-500">$${trade.entry_price.toFixed(4)}</td>
+                <td class="px-3 py-2">
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full ${
+                        trade.status === 'OPEN' ? 'bg-green-100 text-green-800' : 
+                        trade.status === 'CLOSED' ? 'bg-blue-100 text-blue-800' : 
+                        'bg-red-100 text-red-800'
+                    }">
+                        ${trade.status}
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-sm ${
+                    trade.profit > 0 ? 'text-green-600' : trade.profit < 0 ? 'text-red-600' : 'text-gray-500'
+                } font-medium">
+                    ${trade.profit > 0 ? '+' : ''}${trade.profit.toFixed(4)}
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function updateGroqInsights(data) {
+        const analysis = data.market_analysis;
+        const groqStats = data.groq_stats;
+        
+        // Update sentiment badge
+        const sentiment = analysis.market_sentiment || 'neutral';
+        const sentimentBadge = document.getElementById('sentimentBadge');
+        sentimentBadge.textContent = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
+        
+        if (sentiment === 'bullish') {
+            sentimentBadge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800';
+        } else if (sentiment === 'bearish') {
+            sentimentBadge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800';
+        } else {
+            sentimentBadge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800';
+        }
+
+        // Update probability badge
+        const prob = analysis.profit_probability_today || 0;
+        const probBadge = document.getElementById('probabilityBadge');
+        probBadge.textContent = `${prob}%`;
+        
+        if (prob >= 80) {
+            probBadge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800';
+        } else if (prob >= 60) {
+            probBadge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800';
+        } else {
+            probBadge.className = 'px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800';
+        }
+
+        // Update market analysis text
+        const insights = analysis.key_insights || [];
+        const marketText = insights.length > 0 ? insights[0] : 'No insights available';
+        document.getElementById('marketAnalysis').textContent = marketText;
+
+        // Update AI coins list
+        const coins = data.current_coins || [];
+        const coinsList = document.getElementById('aiCoinsList');
+        coinsList.innerHTML = coins.slice(0, 6).map(coin => `
+            <span class="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">${coin}</span>
+        `).join('');
+
+        // Update last update time
+        const lastUpdate = data.last_update ? new Date(data.last_update).toLocaleString() : 'Never';
+        document.getElementById('lastGroqUpdate').textContent = lastUpdate;
+
+        // Update Groq stats
+        const statsText = `Requests: ${groqStats.total_requests || 0}, Success: ${(groqStats.success_rate || 0).toFixed(1)}%`;
+    }
+
+    function updateBotStatus(data) {
+        const status = data.bot_status;
+        const performance = data.performance;
+        
+        document.getElementById('uptime').textContent = status.uptime || '--';
+        
+        // Update win rate bar
+        const winRate = performance.win_rate || 0;
+        const winRateBar = document.getElementById('winRateBar');
+        const weeklyWinRate = document.getElementById('weeklyWinRate');
+        
+        winRateBar.style.width = `${winRate}%`;
+        weeklyWinRate.textContent = `${winRate.toFixed(1)}%`;
+    }
+
+    function updatePerformanceData(metrics) {
+        // Update win rate bar
+        const winRate = metrics.win_rate || 0;
+        const winRateBar = document.getElementById('winRateBar');
+        const weeklyWinRate = document.getElementById('weeklyWinRate');
+        
+        winRateBar.style.width = `${winRate}%`;
+        weeklyWinRate.textContent = `${winRate.toFixed(1)}%`;
+    }
+
+    function updateMarketPrices() {
+        const table = document.getElementById('marketPricesTable');
+        
+        if (Object.keys(marketPrices).length === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="3" class="px-3 py-4 text-center text-gray-500 text-sm">No market data available</td>
+                </tr>
+            `;
+            return;
+        }
+
+        // Show only AI coins
+        const aiPrices = {};
+        for (const coin of aiCoins) {
+            if (marketPrices[coin] !== undefined) {
+                aiPrices[coin] = marketPrices[coin];
+            }
+        }
+
+        if (Object.keys(aiPrices).length === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="3" class="px-3 py-4 text-center text-gray-500 text-sm">Waiting for AI coin prices...</td>
+                </tr>
+            `;
+            return;
+        }
+
+        table.innerHTML = Object.entries(aiPrices).slice(0, 8).map(([symbol, price]) => `
+            <tr>
+                <td class="px-3 py-2 text-sm font-medium text-gray-900">${symbol}</td>
+                <td class="px-3 py-2 text-sm text-gray-900 font-medium">$${price.toFixed(6)}</td>
+                <td class="px-3 py-2 text-sm text-gray-500 hidden sm:table-cell">
+                    <span class="${price < 1 ? 'text-green-600' : 'text-red-600'}">
+                        ${price < 1 ? 'Under $1' : 'Over $1'}
+                    </span>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    async function updateGroqCoins() {
+        if (!confirm('Update AI coins now? This will call Groq API and may take a few seconds.')) return;
+        
+        try {
+            const response = await fetch('/api/groq/update', { method: 'POST' });
+            const result = await response.json();
+            
+            if (result.success) {
+                alert(`✅ AI update successful!\nSelected ${result.coins.length} coins.\nUpdate time: ${result.update_time.toFixed(2)}s`);
+                fetchDashboardData(); // Refresh all data
+            } else {
+                alert('❌ AI update failed: ' + (result.message || 'Unknown error'));
+            }
+        } catch (error) {
+            alert('Error updating AI coins');
+            console.error(error);
+        }
+    }
+
+    async function showPerformanceChart() {
+        try {
+            const response = await fetch('/api/dashboard/daily-performance?days=30');
+            const data = await response.json();
+            
+            if (data.success) {
+                document.getElementById('chartContent').innerHTML = `
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-4">Last 30 Days Performance</h4>
+                        <div class="space-y-3 max-h-[400px] overflow-y-auto">
+                            ${data.daily_performance.map(day => `
+                                <div class="border-b border-gray-200 pb-3">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-sm font-medium text-gray-700">${day.date}</span>
+                                        <span class="text-sm font-bold ${
+                                            day.total_profit >= 0 ? 'text-green-600' : 'text-red-600'
+                                        }">
+                                            $${day.total_profit.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    <div class="grid grid-cols-3 gap-2 text-xs text-gray-600">
+                                        <div>
+                                            <span class="font-medium">${day.trades}</span> trades
+                                        </div>
+                                        <div>
+                                            <span class="font-medium">${day.win_rate}%</span> win rate
+                                        </div>
+                                        <div>
+                                            <span class="font-medium">$${day.total_volume.toFixed(0)}</span> volume
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                document.getElementById('chartModal').classList.remove('hidden');
+            }
+        } catch (error) {
+            alert('Error loading performance data');
+            console.error(error);
+        }
+    }
+
+    async function showAnalytics() {
+        try {
+            const response = await fetch('/api/dashboard/analytics');
+            const data = await response.json();
+            
+            if (data.success) {
+                const analytics = data.analytics;
+                
+                let html = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Trade Summary -->
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-4">Trade Summary</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Total Trades:</span>
+                                    <span class="text-sm font-bold text-gray-800">${analytics.total_trades}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Closed Trades:</span>
+                                    <span class="text-sm font-bold text-gray-800">${analytics.closed_trades}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Open Trades:</span>
+                                    <span class="text-sm font-bold text-gray-800">${analytics.open_trades}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Total Profit:</span>
+                                    <span class="text-sm font-bold text-gray-800">$${analytics.total_profit.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Account Metrics -->
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-4">Account Metrics</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Total Accounts:</span>
+                                    <span class="text-sm font-bold text-gray-800">${analytics.account_metrics.total_accounts}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Validated Accounts:</span>
+                                    <span class="text-sm font-bold text-gray-800">${analytics.account_metrics.validated_accounts}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Total Balance:</span>
+                                    <span class="text-sm font-bold text-gray-800">$${analytics.account_metrics.total_balance.toFixed(2)}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-sm text-gray-600">Avg Balance:</span>
+                                    <span class="text-sm font-bold text-gray-800">$${analytics.account_metrics.average_balance.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add top symbols if available
+                if (analytics.most_profitable_symbols && analytics.most_profitable_symbols.length > 0) {
+                    html += `
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="text-sm font-semibold text-gray-700 mb-4">Most Profitable Symbols</h4>
+                            <div class="space-y-2">
+                                ${analytics.most_profitable_symbols.map(symbol => `
+                                    <div class="flex justify-between items-center border-b border-gray-200 pb-2">
+                                        <span class="text-sm font-medium text-gray-700">${symbol.symbol}</span>
+                                        <div class="text-right">
+                                            <span class="text-sm font-bold ${
+                                                symbol.total_profit >= 0 ? 'text-green-600' : 'text-red-600'
+                                            }">
+                                                $${symbol.total_profit.toFixed(2)}
+                                            </span>
+                                            <div class="text-xs text-gray-500">${symbol.win_rate}% win rate</div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('analyticsContent').innerHTML = html;
+                document.getElementById('analyticsModal').classList.remove('hidden');
+            }
+        } catch (error) {
+            alert('Error loading analytics');
+            console.error(error);
+        }
+    }
+
+    function closeAnalyticsModal() {
+        document.getElementById('analyticsModal').classList.add('hidden');
+    }
+
+    function closeChartModal() {
+        document.getElementById('chartModal').classList.add('hidden');
+    }
+
+    function refreshDashboard() {
+        fetchDashboardData();
+        fetchPerformanceData();
+    }
+
+    // Initialize
+    fetchDashboardData();
+    fetchPerformanceData();
+    
+    // Refresh every 30 seconds
+    setInterval(refreshDashboard, 30000);
+    
+    // Auto-refresh market prices
+    setInterval(updateMarketPrices, 5000);
+</script>
+
+<!-- Add Analytics Button to Header -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const header = document.querySelector('h1.text-xl.sm\\:text-2xl.font-bold.text-gray-800');
+        if (header) {
+            const analyticsBtn = document.createElement('button');
+            analyticsBtn.className = 'ml-2 px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700';
+            analyticsBtn.innerHTML = 'Analytics';
+            analyticsBtn.onclick = showAnalytics;
+            header.parentNode.insertBefore(analyticsBtn, header.nextSibling);
+        }
+    });
+</script>
+
+{% endblock %}
