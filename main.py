@@ -102,10 +102,6 @@ class ConnectionManager:
 
 ws_manager = ConnectionManager()
 
-# Static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
-app.mount("/assets", StaticFiles(directory="assets"), name="assets")
-
 # Routes
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
