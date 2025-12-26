@@ -210,32 +210,34 @@ class GroqAIClient:
         """Get daily coin picks from Groq AI"""
         self.logger.info("🤖 Getting daily coin picks from Groq...")
 
-        prompt = """CRITICAL INSTRUCTION: You MUST select EXACTLY 10 cryptocurrency trading pairs under $1.00 with 80%+ probability of profit today.
+        prompt = """CRITICAL INSTRUCTION: You are a quantitative crypto analyst. Select the 10 cryptocurrency trading pairs CURRENTLY UNDER $1.00 that present the STRONGEST BULLISH TECHNICAL SETUPS for potential profit in the next 24-48 hours.
 
-        CRITICAL SELECTION CRITERIA:
-        1. Current price MUST be under $1.00 USD
-        2. High trading volume (200%+ of 30-day average)
-        3. RSI below 38 (strongly oversold)
-        4. Positive MACD crossover or bullish divergence
-        5. Strong support level with recent bounce
-        6. High liquidity (minimum $5M daily volume)
-        7. Technical indicators showing 80%+ profit probability
-        8. Recent consolidation with breakout potential
-        9. Strong community/social sentiment
-        10. Low market cap for higher volatility gains
-        
-        REQUIRED OUTPUT FORMAT (STRICT JSON):
-        {
-            "analysis_date": "YYYY-MM-DD",
-            "selected_coins": ["ADAUSDT", "DOGEUSDT", "TRXUSDT", "VETUSDT", "ALGOUSDT", "XLMUSDT", "ONEUSDT", "ANKRUSDT", "COTIUSDT", "SHIBUSDT"],
-            "reasoning": "Brief technical analysis explaining 80%+ profit probability for each selected coin",
-            "confidence_score": 0.85,
-            "profit_probability_percentage": 80,
-            "price_range": "All under $1.00",
-            "risk_assessment": "Low to Medium with high reward potential"
+        PRIORITIZATION CRITERIA (Rank coins by how many of these bullish signals they exhibit):
+        1.  **Price:** MUST be under $1.00 USD.
+        2.  **Momentum & Volume:** High relative volume (preferably >150% of recent average) accompanying price moves.
+        3.  **Oversold Bounce:** RSI (14) is below 40 and showing an upward turn.
+        4.  **Trend Shift:** MACD showing a recent or impending bullish crossover/histogram divergence.
+        5.  **Support:** Price is at or near a defined support level (e.g., trendline, moving average, previous resistance-turn-support).
+        6.  **Liquidity:** Sufficient liquidity (visible order book depth, not just reported volume).
+        7.  **Pattern:** Evidence of consolidation (e.g., wedge, triangle) with a potential bullish breakout.
+        8.  **Market Context:** Positive sector/market sentiment aligns with the coin's move.
+
+         REQUIRED OUTPUT FORMAT (STRICT JSON):
+       {
+        "analysis_date": "YYYY-MM-DD",
+         "selected_coins": ["COIN1USDT", "COIN2USDT", "COIN3USDT", "COIN4USDT", "COIN5USDT", "COIN6USDT", "COIN7USDT", "COIN8USDT", "COIN9USDT", "COIN10USDT"],
+         "reasoning": "Concise 1-2 sentence summary of the overall market context and why these were chosen based on the criteria.",
+         "confidence_score": 0.75,
+         "risk_assessment": "Medium. All selections are low-cap, high-volatility assets. Strict stop-losses are mandatory."
         }
-        
-        MANDATORY: Return EXACTLY 10 coins. ALL coins MUST be under $1.00. Probability MUST be 80%+."""
+
+          MANDATORY RULES:
+          1.  Output MUST be valid JSON.
+          2.  `selected_coins` MUST be exactly 10 strings. Use the 'USDT' suffix (e.g., 'ADAUSDT').
+          3.  All coins MUST be under $1.00 at the time of analysis.
+          4.  `confidence_score` is a float between 0.5 and 0.9, reflecting the aggregate strength of signals.
+          5.  Do NOT include disclaimers in the JSON. Provide only the specified keys.
+          """
 
         result = self.get_coins_analysis(prompt)
 
